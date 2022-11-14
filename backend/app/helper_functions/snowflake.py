@@ -25,6 +25,7 @@ def open_snowflake_cnx() -> SnowflakeConnection:
     ACCOUNT = environ.get('SNOWFLAKE_ACCOUNT')
     DATABASE = environ.get('SNOWFLAKE_DATABASE')
     SCHEMA = environ.get('SNOWFLAKE_SCHEMA')
+    WAREHOUSE = environ.get('SNOWFLAKE_WAREHOUSE')
 
     cnx = connect(
         user=USER,
@@ -32,6 +33,7 @@ def open_snowflake_cnx() -> SnowflakeConnection:
         account=ACCOUNT,
         database=DATABASE,
         schema=SCHEMA,
+        warehouse=WAREHOUSE,
         paramstyle='qmark'
     )
 

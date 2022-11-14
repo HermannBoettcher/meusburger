@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { ChangeEvent, useState } from 'react'
+import axios from 'axios'
 import logo from './logo.svg'
 import './App.css'
 import {
@@ -76,6 +77,21 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 function App() {
   const [rows, setRows] = useState<Row[]>([])
+
+  const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files && files.length > 0) {
+      const file = files[0]
+      if (file.type === 'text/csv') {
+        let formData = new FormData()
+        formData.append('file', file)
+        axios.post('http://localhost:5000/upload', formData).then((res) => {
+          console.log(res.statusText)
+        })
+      }
+    }
+  }
+
   return (
     <div className='App'>
       <ThemeProvider theme={darkTheme}>
@@ -104,7 +120,12 @@ function App() {
                 >
                   <Button variant='contained' component='label'>
                     Upload File
-                    <input type='file' hidden />
+                    <input
+                      type='file'
+                      accept='text/csv'
+                      hidden
+                      onChange={onFileChange}
+                    />
                   </Button>
                   <Button variant='contained'>Show All</Button>
                   <Search>

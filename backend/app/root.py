@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from app.helper_functions.snowflake import open_snowflake_cnx
-from products.routes import construct_products_blueprint
+from app.products.routes import construct_products_blueprint
 
 
 def create_app():
@@ -10,6 +10,7 @@ def create_app():
     CORS(app, resources={r"/*": {'origins': '*'}})
 
     cnx = open_snowflake_cnx()
+    
     app.config['CORS_HEADERS'] = 'Content-Type'
     with app.app_context():
         app.register_blueprint(
