@@ -24,8 +24,8 @@ const ProductsTable = ({ rows }: { rows: Row[] }) => {
         <TableHead>
           <TableRow>
             <TableCell align='right'>Id</TableCell>
-            <TableCell align='right'>Product Name</TableCell>
-            <TableCell align='right'>Part Number</TableCell>
+            <TableCell align='left'>Product Name</TableCell>
+            <TableCell align='left'>Part Number</TableCell>
             <TableCell align='right'>Prize (€)</TableCell>
           </TableRow>
         </TableHead>
@@ -35,12 +35,12 @@ const ProductsTable = ({ rows }: { rows: Row[] }) => {
               key={row.id}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
-              <TableCell component='th' scope='row'>
+              <TableCell component='th' align='right' scope='row'>
                 {row.id}
               </TableCell>
-              <TableCell align='right'>{row.productName}</TableCell>
-              <TableCell align='right'>{row.partNumber}</TableCell>
-              <TableCell align='right'>{row.prize.toFixed(2)}</TableCell>
+              <TableCell align='left'>{row.productName}</TableCell>
+              <TableCell align='left'>{row.partNumber}</TableCell>
+              <TableCell align='right'>{row.prize}</TableCell>
             </TableRow>
           ))}
         </TableBody>

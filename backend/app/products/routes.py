@@ -43,7 +43,7 @@ def construct_products_blueprint(cnx):
 
         return response
 
-    @products.get('product')
+    @products.get('/product')
     def get_product_by_id():
         response = {}
         id = request.args['id']
@@ -52,12 +52,13 @@ def construct_products_blueprint(cnx):
             response['product'] = cur.fetchone()[0]
         return response
 
-    @products.get('products')
+    @products.get('/products')
     def get_all_products():
         response = {}
         with get_cursor(cnx) as cur:
             cur.execute('SELECT * FROM products;')
-            response['products'] = cur.fetchall()
+            response['products'] = [
+                list(e)[0:3] + [float(list(e)[3])] for e in cur.fetchall()]
         return response
 
     return products
