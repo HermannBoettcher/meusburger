@@ -7,11 +7,20 @@ import {
   Stack,
   Button,
   InputBase,
+  Snackbar,
+  Alert,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import SearchIcon from '@mui/icons-material/Search'
-import { ChangeEvent } from 'react'
+import {
+  KeyboardEvent,
+  ChangeEvent,
+  useState,
+  Dispatch,
+  useEffect,
+} from 'react'
 import axios from 'axios'
+import { Row } from '../App'
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -55,7 +64,34 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }))
 
-const Navbar = ({ onShowAll }: { onShowAll: () => void }) => {
+const Navbar = ({
+  setRows,
+}: {
+  setRows: Dispatch<React.SetStateAction<Row[]>>
+}) => {
+  const [id, setId] = useState('')
+  const [file, setFile] = useState<FormData | null>(null)
+  const [open, setOpen] = useState(false)
+
+  const handleClose = (_?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return
+    }
+
+    setOpen(false)
+  }
+
+  const onShowAll = () => {
+    axios.get('http://localhost:5000/products').then((res) => {
+      // console.log('res.data', res.data.products)
+      setRows(
+        res.data.products.map((e: (string | number)[]) => {
+          return { id: e[0], productName: e[1], partNumber: e[2], prize: e[3] }
+        })
+      )
+    })
+  }
+
   const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (files && files.length > 0) {
@@ -63,53 +99,101 @@ const Navbar = ({ onShowAll }: { onShowAll: () => void }) => {
       if (file.type === 'text/csv') {
         let formData = new FormData()
         formData.append('file', file)
-        axios.post('http://localhost:5000/upload', formData).then((res) => {
-          console.log(res.statusText)
-        })
-      }
+        setFile(formData)
+      } else setFile(null)
     }
   }
 
+  const onSearchProduct = (event: KeyboardEvent) => {
+    if (event.key === 'Enter')
+      axios.get(`http://localhost:5000/product?id=${id}`).then((res) => {
+        if (res.data.found) {
+          const e = res.data.product
+          setRows([
+            {
+              id: e[0],
+              productName: e[1],
+              partNumber: e[2],
+              prize: e[3],
+            } as Row,
+          ])
+        } else setOpen(true)
+      })
+  }
+
+  useEffect(() => {
+    if (file)
+      axios
+        .post('http://localhost:5000/upload', file)
+        .then((res) => {
+          console.log(res.statusText)
+        })
+        .finally(() => {
+          setFile(null)
+        })
+  }, [file, setFile])
+
   return (
-    <AppBar position='static'>
-      <Toolbar>
-        <IconButton
-          size='large'
-          edge='start'
-          color='inherit'
-          aria-label='menu'
-          sx={{ mr: 2 }}
-        >
-          <MenuIcon />
-        </IconButton>
-        <Typography variant='h6' component='div'>
-          Products
-        </Typography>
-        <Stack direction='row' spacing={2} flex={1} justifyContent='flex-end'>
-          <Button variant='contained' component='label'>
-            Upload CSV
-            <input
-              type='file'
-              accept='text/csv'
-              hidden
-              onChange={onFileChange}
-            />
-          </Button>
-          <Button variant='contained' onClick={onShowAll}>
-            Show All
-          </Button>
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder='Search…'
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </Search>
-        </Stack>
-      </Toolbar>
-    </AppBar>
+    <>
+      <AppBar position='static'>
+        <Toolbar>
+          <IconButton
+            size='large'
+            edge='start'
+            color='inherit'
+            aria-label='menu'
+            sx={{ mr: 2 }}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography variant='h6' component='div'>
+            Products
+          </Typography>
+          <Stack direction='row' spacing={2} flex={1} justifyContent='flex-end'>
+            <Button variant='contained' component='label'>
+              Upload CSV
+              <input
+                type='file'
+                accept='text/csv'
+                hidden
+                onChange={onFileChange}
+              />
+            </Button>
+            <Button variant='contained' onClick={onShowAll}>
+              Show All
+            </Button>
+            <Search>
+              <SearchIconWrapper sx={{ cursor: 'pointer' }}>
+                <SearchIcon />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder='Search…'
+                inputProps={{ 'aria-label': 'search' }}
+                value={id}
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                  setId(event.target.value)
+                }
+                onKeyUp={onSearchProduct}
+                onKeyPress={(event: KeyboardEvent) => {
+                  if (
+                    ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].indexOf(
+                      event.code.slice(-1)
+                    ) === -1
+                  )
+                    event.preventDefault()
+                  //   event.charCode >= 48 && event.charCode <= 57
+                }}
+              />
+            </Search>
+          </Stack>
+        </Toolbar>
+      </AppBar>
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity='error'>
+          Product not found.
+        </Alert>
+      </Snackbar>
+    </>
   )
 }
 

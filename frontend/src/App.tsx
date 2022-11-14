@@ -23,24 +23,13 @@ const darkTheme = createTheme({
 function App() {
   const [rows, setRows] = useState<Row[]>([])
 
-  const onShowAll = () => {
-    axios.get('http://localhost:5000/products').then((res) => {
-      // console.log('res.data', res.data.products)
-      setRows(
-        res.data.products.map((e: (string | number)[]) => {
-          return { id: e[0], productName: e[1], partNumber: e[2], prize: e[3] }
-        })
-      )
-    })
-  }
-
   return (
     <div className='App'>
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
         <Box>
           <main>
-            <Navbar {...{ onShowAll }} />
+            <Navbar {...{ setRows }} />
             <Stack direction='column' spacing={2}>
               <ProductsTable {...{ rows }} />
             </Stack>

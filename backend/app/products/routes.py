@@ -48,8 +48,13 @@ def construct_products_blueprint(cnx):
         response = {}
         id = request.args['id']
         with get_cursor(cnx) as cur:
-            cur.execute('SELECT * FROM products WHERE "Id" = ?;', [id])
-            response['product'] = cur.fetchone()[0]
+            cur.execute('SELECT * FROM products WHERE "id" = ?;', [id])
+            p = cur.fetchone()
+            if p is not None:
+                response['found'] = True
+                response['product'] = p
+            else:
+                response['found']: False
         return response
 
     @products.get('/products')
